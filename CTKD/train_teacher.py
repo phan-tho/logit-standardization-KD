@@ -60,6 +60,10 @@ def parse_option():
     parser.add_argument('--dist-url', default='tcp://127.0.0.1:23451', type=str,
                     help='url used to set up distributed training')
     
+    parser.add_argument('--dali', type=str, default=None, choices=[None, 'dali'], help='use dali for data loading')
+    parser.add_argument('--feat_drop_ratio', type=float, default=0.0, help='dropout ratio for features, default 0.0')
+
+    
     opt = parser.parse_args()
 
     # set different learning rate from these 4 models
