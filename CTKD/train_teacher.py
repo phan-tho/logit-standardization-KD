@@ -61,7 +61,7 @@ def parse_option():
                     help='url used to set up distributed training')
     
     parser.add_argument('--dali', type=str, default=None, choices=[None, 'dali'], help='use dali for data loading')
-    parser.add_argument('--feat_drop_ratio', type=float, default=0.0, help='dropout ratio for features, default 0.0')
+    # parser.add_argument('--feat_drop_ratio', type=float, default=0.0, help='dropout ratio for features, default 0.0')
 
     
     opt = parser.parse_args()
@@ -135,7 +135,7 @@ def main_worker(gpu, ngpus_per_node, opt):
         'imagenette': 10,
     }.get(opt.dataset, None)
     
-    model = model_dict[opt.model](num_classes=n_cls, feat_drop_ratio=opt.feat_drop_ratio)
+    model = model_dict[opt.model](num_classes=n_cls)
 
     # optimizer
     optimizer = optim.SGD(model.parameters(),
