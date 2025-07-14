@@ -63,6 +63,8 @@ def parse_option():
     parser.add_argument('--dali', type=str, default=None, choices=[None, 'dali'], help='use dali for data loading')
     # parser.add_argument('--feat_drop_ratio', type=float, default=0.0, help='dropout ratio for features, default 0.0')
 
+    parser.add_argument('--saved_model_path', type=str, default='best_teacher.pth', help='path to saved model')
+
     
     opt = parser.parse_args()
 
@@ -210,6 +212,19 @@ def main_worker(gpu, ngpus_per_node, opt):
             print(' * Epoch {}, Acc@1 {:.3f}, Acc@5 {:.3f}'.format(epoch, train_acc, train_acc_top5))
 
         test_acc, test_acc_top5, test_loss = validate(val_loader, model, criterion, opt)
+
+        if test_acc > best_acc:
+            best_acc = test_acc
+            if not opt.multiprocessing_distributed or opt.rank % ngpus_per_node == 0:
+                print('Saving to {}'.format(os.path.join(opt.save_folder, opt.saved_model_path)))
+                state = {
+                    'net': model.state_dict(),
+                    'acc@1': best_acc,
+                    'acc@5': test_acc_top5,
+                    'epoch': epoch,
+                }
+                torch.save(state, os.path.join(opt.save_folder, opt.saved_model_path))
+                
 
         if not opt.multiprocessing_distributed or opt.rank % ngpus_per_node == 0:
             print(' ** Acc@1 {:.3f}, Acc@5 {:.3f}'.format(test_acc, test_acc_top5))
