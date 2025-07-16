@@ -173,7 +173,7 @@ def load_teacher(model_path, n_cls, gpu=None, opt=None):
     map_location = None if gpu is None else {'cuda:0': 'cuda:%d' % (gpu if opt.multiprocessing_distributed else 0)}
 
     if opt.dataset == 'cifar100':
-        model.load_state_dict(torch.load(model_path, map_location=map_location)['model'])
+        model.load_state_dict(torch.load(model_path, map_location=map_location)['net'])
     elif opt.dataset == 'imagenet':
         checkpoint = torch.load(model_path, map_location=map_location)
         # new_state_dict = {}
