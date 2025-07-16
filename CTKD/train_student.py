@@ -118,6 +118,7 @@ def parse_option():
                     help='url used to set up distributed training')
     
     parser.add_argument('--deterministic', action='store_true', help='Make results reproducible')
+    parser.add_argument('--saved_student_path', type=str, default='student_resnet8x4.pth', help='path to saved model')
 
     opt = parser.parse_args()
 
@@ -164,8 +165,10 @@ def get_teacher_name(model_path):
 
 def load_teacher(model_path, n_cls, gpu=None, opt=None):
     print('==> loading teacher model')
-    model_t = get_teacher_name(model_path)
-    model = model_dict[model_t](num_classes=n_cls)
+    # model_t = get_teacher_name(model_path)
+    # model = model_dict[model_t](num_classes=n_cls)
+    model = model_dict['resnet32x4'](num_classes=n_cls)
+
     # TODO: reduce size of the teacher saved in train_teacher.py
     map_location = None if gpu is None else {'cuda:0': 'cuda:%d' % (gpu if opt.multiprocessing_distributed else 0)}
 
@@ -434,14 +437,17 @@ def main_worker(gpu, ngpus_per_node, opt):
 
             if test_acc > best_acc:
                 best_acc = test_acc
-                best_model = True
+                # best_model = True
 
-            state = {
-                'epoch': epoch,
-                'model': model_s.state_dict(),
-                'best_acc': best_acc,
-            }
-            save_file = os.path.join(opt.save_folder, '{}_best.pth'.format(opt.model_s))
+                state = {
+                    'epoch': epoch,
+                    'model': model_s.state_dict(),
+                    'best_acc': best_acc,
+                }
+
+                torch.save(state, opt.saved_student_path)
+
+            # save_file = os.path.join(opt.save_folder, '{}_best.pth'.format(opt.model_s))
             
             test_merics = {
                             'test_acc': test_acc,
@@ -453,11 +459,11 @@ def main_worker(gpu, ngpus_per_node, opt):
 
             save_dict_to_json(test_merics, os.path.join(opt.save_folder, "test_best_metrics.json"))
 
-            if epoch > opt.epochs/2:
-                if best_model:
-                    best_model=False
-                    if opt.save_model:
-                        torch.save(state, save_file)
+            # if epoch > opt.epochs/2:
+            #     if best_model:
+            #         best_model=False
+            #         if opt.save_model:
+            #             torch.save(state, opt.saved_student_path)
 
 
 if __name__ == '__main__':
