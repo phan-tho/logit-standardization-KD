@@ -80,6 +80,7 @@ def parse_option():
     parser.add_argument('-a', '--alpha', type=float, default=0.9, help='weight balance for KD')
     parser.add_argument('-b', '--beta', type=float, default=0.0, help='weight balance for other losses')
 
+    parser.add_argument('--log_weight_term', default=False, type=bool)
     # KL distillation
     parser.add_argument('--kd_T', type=float, default=4, help='default temperature for KD distillation')
 
