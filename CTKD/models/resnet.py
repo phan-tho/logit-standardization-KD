@@ -242,6 +242,9 @@ def resnet8x4_double(**kwargs):
 def resnet32x4(**kwargs):
     return ResNet(32, [32, 64, 128, 256], 'basicblock', **kwargs)
 
+def resnet56x4(**kwargs):
+    return ResNet(56, [32, 64, 128, 256], 'basicblock', **kwargs)
+
 
 def gap_loss(y_s, y_t, temp_stu, temp_tea):
 

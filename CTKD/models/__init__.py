@@ -1,7 +1,7 @@
 from .mobilenetv2 import mobile_half
 from .mobilenetv2_imagenet import mobilenet_v2
 from .resnet import (resnet8, resnet8x4, resnet8x4_double, resnet14, resnet20,
-                     resnet32, resnet32x4, resnet44, resnet56, resnet110)
+                     resnet32, resnet32x4, resnet44, resnet56, resnet110, resnet56x4)
 from .resnetv2 import (resnet18, resnet18x2, resnet34, resnet34x4,
                        resnext50_32x4d, wide_resnet50_2)
 from .resnetv2_org import ResNet50
@@ -31,6 +31,7 @@ model_dict = {
     'resnet8x4': resnet8x4,
     'resnet8x4_double': resnet8x4_double,
     'resnet32x4': resnet32x4,
+    'resnet56x4': resnet56x4,
     'resnext50_32x4d': resnext50_32x4d,
     'resnet34x4': resnet34x4,
     'wrn_16_1': wrn_16_1,
