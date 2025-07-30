@@ -174,7 +174,7 @@ def train_distill(epoch, train_loader, module_list, mlp_net, cos_value, criterio
         loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
         if opt.log_weight_term:
             print(f'gamma: {opt.gamma}, alpha: {opt.alpha}, beta: {opt.beta}')
-            print('loss_cls: {:.4f}, loss_div: {:.4f}, loss_kd: {:.4f}'.format(loss_cls.item(), loss_div.item(), loss_kd.item()))
+            print('loss_cls: {:.4f}, loss_div: {:.4f}, loss_kd: {:.4f}'.format(loss_cls, loss_div, loss_kd))
         
         loss_kl.update(loss_div.item(), input.size(0))
         losses.update(loss.item(), input.size(0))
