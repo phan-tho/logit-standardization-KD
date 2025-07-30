@@ -31,8 +31,8 @@ class WSLDistiller(nn.Module):
         self.t_net = t_net
         self.s_net = s_net
 
-        self.T = 2
-        self.alpha = 2.5
+        self.T = 4
+        self.alpha = 2.25
 
         self.hard_loss = nn.CrossEntropyLoss()
         if torch.cuda.is_available():
