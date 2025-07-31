@@ -80,20 +80,20 @@ class WSLDistiller(nn.Module):
         if epoch != self.last_epoch:
             self.last_epoch = epoch
             if epoch % 10 == 0:
-                focal_weight = focal_weight.detach().cpu().numpy().tolist()
-                softmax_loss_s = softmax_loss_s.detach().cpu().numpy().tolist()
-                softmax_loss_t = softmax_loss_t.detach().cpu().numpy().tolist()
-                soft_loss = soft_loss.detach().cpu().numpy().tolist()
-                hard_loss = hard_loss.detach().cpu().numpy().tolist()
-                loss = loss.detach().cpu().numpy().tolist()
+                focal_weight_log = focal_weight.detach().cpu().numpy().tolist()
+                softmax_loss_s_log = softmax_loss_s.detach().cpu().numpy().tolist()
+                softmax_loss_t_log = softmax_loss_t.detach().cpu().numpy().tolist()
+                soft_loss_log = soft_loss.detach().cpu().numpy().tolist()
+                hard_loss_log = hard_loss.detach().cpu().numpy().tolist()
+                loss_log = loss.detach().cpu().numpy().tolist()
                 log = {
                     'epoch': epoch,
-                    'focal_weight': focal_weight,
-                    'softmax_loss_s': softmax_loss_s,
-                    'softmax_loss_t': softmax_loss_t,
-                    'soft_loss': soft_loss,
-                    'hard_loss': hard_loss,
-                    'loss': loss
+                    'focal_weight': focal_weight_log,
+                    'softmax_loss_s': softmax_loss_s_log,
+                    'softmax_loss_t': softmax_loss_t_log,
+                    'soft_loss': soft_loss_log,
+                    'hard_loss': hard_loss_log,
+                    'loss': loss_log
                 }
                 # save log to json file
                 with open(name_file_log, 'r+') as f:
@@ -103,6 +103,7 @@ class WSLDistiller(nn.Module):
                     json.dump(data, f, indent=4)
                     f.truncate()
 
+                gc.collect()
         return fc_s, loss
 
 def build_dummy_dataset():
