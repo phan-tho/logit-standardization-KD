@@ -196,7 +196,11 @@ def train(train_loader, d_net, optimizer, epoch):
 
         outputs, loss = d_net(inputs, targets, epoch)
 
+        if isinstance(loss, float):
+            loss = torch.tensor(loss, device=device)
         loss = torch.mean(loss)
+        # TypeError: mean(): argument 'input' (position 1) must be Tensor, not float
+
         acc1, acc5 = accuracy(outputs.data, targets, topk=(1, 5))
 
         train_loss.update(loss.item(), batch_size)
