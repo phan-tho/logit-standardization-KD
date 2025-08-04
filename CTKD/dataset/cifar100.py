@@ -113,6 +113,10 @@ def get_cifar100_dataloaders(batch_size=128, num_workers=8, is_instance=False):
                              batch_size=int(batch_size/2),
                              shuffle=False,
                              num_workers=int(num_workers/2))
+    
+    # print len train set and test set
+    print(f'Number of training samples: {len(train_set)}')
+    print(f'Number of test samples: {len(test_set)}')
 
     if is_instance:
         return train_loader, test_loader, n_data

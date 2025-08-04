@@ -18,10 +18,10 @@ from dataset.cifar100 import get_cifar100_dataloaders
 
 PATH_TEACHER = '/kaggle/input/trained-resnet/teacher_resnet32x4_acc79.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-init_lr = 0.1
-weight_decay = 1e-4
+init_lr = 0.05
+weight_decay = 5e-4
 momentum = 0.9
-epochs = 200
+epochs = 240
 name_file_log = 'log_wsl.json'
 
 class WSLDistiller(nn.Module):
@@ -143,7 +143,7 @@ def load_model():
 
 
 def main():
-    best_acc = 0.0
+    best_acc, at_epoch = 0.0, 0
     train_loader, val_loader = get_cifar100_dataloaders(batch_size=128, num_workers=4)
     # train_loader, val_loader, test_loader = build_dummy_dataset()
 
@@ -165,6 +165,7 @@ def main():
         # remember best prec@1 and save checkpoint
         if acc1 > best_acc:
             best_acc = acc1
+            at_epoch = epoch
             print('Current best accuracy (top-1 and 5 error):', best_acc)
             ckt = {
                 'epoch': epoch,
@@ -175,7 +176,7 @@ def main():
             torch.save(ckt, save_path)
         gc.collect()
 
-    print('Best accuracy (top-1 and 5 error):', best_acc)
+    print(f'Best accuracy: {best_acc} at epoch {at_epoch}')
 
 def train(train_loader, d_net, optimizer, epoch):
     print('epoch %d lr %e' % (epoch, optimizer.param_groups[0]['lr']))
@@ -197,10 +198,7 @@ def train(train_loader, d_net, optimizer, epoch):
 
         outputs, loss = d_net(inputs, targets, epoch)
 
-        if isinstance(loss, float):
-            loss = torch.tensor(loss, device=device)
         loss = torch.mean(loss)
-        # TypeError: mean(): argument 'input' (position 1) must be Tensor, not float
 
         acc1, acc5 = accuracy(outputs.data, targets, topk=(1, 5))
 
@@ -238,11 +236,11 @@ class AverageMeter(object):
 
 
 def adjust_learning_rate(optimizer, epoch):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = init_lr * (0.1 ** (epoch // 30))
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs after first 150 epochs"""
+    if epoch >= 150:
+        lr = init_lr * (0.1 ** ((epoch - 150) // 30))
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
 
 
 def accuracy(output, target, topk=(1,)):
