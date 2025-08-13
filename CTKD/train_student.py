@@ -121,6 +121,9 @@ def parse_option():
     parser.add_argument('--deterministic', action='store_true', help='Make results reproducible')
     parser.add_argument('--saved_student_path', type=str, default='student_resnet8x4.pth', help='path to saved model')
 
+    parser.add_argument('--imb_factor', default=1, type=float, help='imbalance dataset, largest sample / smallest sample')
+    parser.add_argument('--n_omits', default=0, type=int, help='number of classes to omit')
+
     opt = parser.parse_args()
 
     # set different learning rate from these 4 models
@@ -394,7 +397,7 @@ def main_worker(gpu, ngpus_per_node, opt):
                                                                                mode=opt.mode)
         else:
             train_loader, val_loader = get_cifar100_dataloaders(batch_size=opt.batch_size,
-                                                                        num_workers=opt.num_workers)
+                                                                        num_workers=opt.num_workers, n_omits=opt.n_omits, imb_factor=opt.imb_factor)
     elif opt.dataset in imagenet_list:
         train_loader, val_loader, train_sampler = get_imagenet_dataloader(dataset=opt.dataset, batch_size=opt.batch_size,
                                                                         num_workers=opt.num_workers,

@@ -7,6 +7,9 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+from torch.utils.data import Subset
+
+
 """
 mean = {
     'cifar100': (0.5071, 0.4867, 0.4408),
@@ -72,7 +75,7 @@ class CIFAR100Instance(CIFAR100BackCompat):
         return img, target, index
 
 
-def get_cifar100_dataloaders(batch_size=128, num_workers=8, is_instance=False):
+def get_cifar100_dataloaders(batch_size=128, num_workers=8, is_instance=False, imb_factor=1, n_omits=0):
     """
     cifar 100
     """
@@ -100,6 +103,11 @@ def get_cifar100_dataloaders(batch_size=128, num_workers=8, is_instance=False):
                                       download=True,
                                       train=True,
                                       transform=train_transform)
+    if n_omits > 0:
+        train_set = omit_last_classes(train_set, n_omits)
+    if imb_factor > 1:
+        train_set = make_imbalanced_dataset(train_set, imb_factor)
+
     train_loader = DataLoader(train_set,
                               batch_size=batch_size,
                               shuffle=True,
@@ -236,3 +244,36 @@ def get_cifar100_dataloaders_sample(batch_size=128, num_workers=8, k=4096, mode=
                              num_workers=int(num_workers/2))
 
     return train_loader, test_loader, n_data
+
+
+def make_imbalanced_dataset(dataset, imb_factor):
+    rng = np.random.default_rng()
+    targets = np.array([label for (_, label) in dataset])
+    n_class = len(set(targets))
+    cnt_cls = np.array([sum(targets == i) for i in range(n_class)])
+    img_max = min(cnt_cls)
+
+    imb_factor = 1/imb_factor
+
+    img_num_per_cls = []
+    for cls_idx in range(n_class):
+        num = img_max * (imb_factor**(cls_idx / (n_class - 1.0)))
+        img_num_per_cls.append(int(num))
+
+    indices_list = []
+    for cls_idx, num_samples in enumerate(img_num_per_cls):
+        cls_indices = np.where(targets == cls_idx)[0]
+        sampled_indices = rng.choice(cls_indices, size=num_samples, replace=False)
+        indices_list.append(sampled_indices)
+
+    all_indices = np.concatenate(indices_list)
+    return Subset(dataset, all_indices)
+
+
+def omit_last_classes(dataset, n_omits):
+    targets = np.array([label for (_, label) in dataset])
+    max_class = max(targets) + 1
+    keep_classes = set(range(max_class - n_omits))
+
+    keep_indices = [i for i, t in enumerate(targets) if t in keep_classes]
+    return Subset(dataset, keep_indices)
