@@ -412,6 +412,7 @@ def main_worker(gpu, ngpus_per_node, opt):
 
     decay_value = 1
     best_acc = 0
+    at_epoch = 0
 
     for epoch in range(1, opt.epochs + 1):
 
@@ -441,6 +442,7 @@ def main_worker(gpu, ngpus_per_node, opt):
 
             if test_acc > best_acc:
                 best_acc = test_acc
+                at_epoch = epoch
                 # best_model = True
 
                 state = {
@@ -468,6 +470,8 @@ def main_worker(gpu, ngpus_per_node, opt):
             #         best_model=False
             #         if opt.save_model:
             #             torch.save(state, opt.saved_student_path)
+
+    print(f"best acc: {best_acc} at epoch {at_epoch}")
 
 
 if __name__ == '__main__':
