@@ -65,6 +65,8 @@ def parse_option():
 
     parser.add_argument('--saved_model_path', type=str, default='best_teacher.pth', help='path to saved model')
 
+    parser.add_argument('--imb_factor', default=1, type=float, help='imbalance dataset, largest sample / smallest sample')
+    parser.add_argument('--n_omits', default=0, type=int, help='number of classes to omit')
     
     opt = parser.parse_args()
 
@@ -178,7 +180,8 @@ def main_worker(gpu, ngpus_per_node, opt):
 
     # dataloader
     if opt.dataset == 'cifar100':
-        train_loader, val_loader = get_cifar100_dataloaders(batch_size=opt.batch_size, num_workers=opt.num_workers)
+        train_loader, val_loader = get_cifar100_dataloaders(batch_size=opt.batch_size, num_workers=opt.num_workers, 
+                                                            n_omits=opt.n_omits, imb_factor=opt.imb_factor)
     elif opt.dataset in imagenet_list:
         train_loader, val_loader, train_sampler = get_imagenet_dataloader(
                     dataset = opt.dataset,
