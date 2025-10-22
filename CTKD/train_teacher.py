@@ -238,6 +238,9 @@ def main_worker(gpu, ngpus_per_node, opt):
                     'test_acc_top5': test_acc_top5,
                     'epoch': epoch}    
             save_dict_to_json(test_merics, os.path.join(opt.save_folder, "test_best_metrics.json"))
+
+    # print best acc
+    print('Best acc:', best_acc)
             
 if __name__ == '__main__':
     main()
