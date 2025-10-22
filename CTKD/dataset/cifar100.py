@@ -74,6 +74,56 @@ class CIFAR100Instance(CIFAR100BackCompat):
 
         return img, target, index
 
+def get_cifar10_dataloaders(batch_size=128, num_workers=8, imb_factor=1, n_omits=0):
+    """
+    cifar 10
+    mean: 0.49139968, 0.48215827 ,0.44653124
+    std: 0.24703233 0.24348505 0.26158768
+    """
+    mean = [0.49139968, 0.48215827, 0.44653124]
+    stdv = [0.24703233, 0.24348505, 0.26158768]
+
+    data_folder = get_data_folder()
+
+    train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=stdv),
+    ])
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=stdv),
+    ])
+
+    train_set = datasets.CIFAR10(root=data_folder,
+                                 download=True,
+                                 train=True,
+                                 transform=train_transform)
+    if n_omits > 0:
+        train_set = omit_last_classes(train_set, n_omits)
+    if imb_factor > 1:
+        train_set = make_imbalanced_dataset(train_set, imb_factor)
+
+    train_loader = DataLoader(train_set,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=num_workers)
+
+    test_set = datasets.CIFAR10(root=data_folder,
+                                download=True,
+                                train=False,
+                                transform=test_transform)
+    test_loader = DataLoader(test_set,
+                             batch_size=int(batch_size/2),
+                             shuffle=False,
+                             num_workers=int(num_workers/2))
+    
+    # print len train set and test set
+    print(f'Number of training samples: {len(train_set)}')
+    print(f'Number of test samples: {len(test_set)}')
+
+    return train_loader, test_loader
 
 def get_cifar100_dataloaders(batch_size=128, num_workers=8, is_instance=False, imb_factor=1, n_omits=0):
     """

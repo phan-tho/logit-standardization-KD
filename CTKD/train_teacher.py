@@ -10,7 +10,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.optim as optim
-from dataset.cifar100 import get_cifar100_dataloaders
+from dataset.cifar100 import get_cifar100_dataloaders, get_cifar10_dataloaders
 from dataset.imagenet import get_imagenet_dataloader, imagenet_list
 from helper.loops import train_vanilla as train
 from helper.loops import validate
@@ -135,6 +135,7 @@ def main_worker(gpu, ngpus_per_node, opt):
     # model
     n_cls = {
         'cifar100': 100,
+        'cifar10': 10,
         'imagenet': 1000,
         'imagenette': 10,
     }.get(opt.dataset, None)
@@ -181,6 +182,9 @@ def main_worker(gpu, ngpus_per_node, opt):
     # dataloader
     if opt.dataset == 'cifar100':
         train_loader, val_loader = get_cifar100_dataloaders(batch_size=opt.batch_size, num_workers=opt.num_workers, 
+                                                            n_omits=opt.n_omits, imb_factor=opt.imb_factor)
+    elif opt.dataset == 'cifar10':
+        train_loader, val_loader = get_cifar10_dataloaders(batch_size=opt.batch_size, num_workers=opt.num_workers, 
                                                             n_omits=opt.n_omits, imb_factor=opt.imb_factor)
     elif opt.dataset in imagenet_list:
         train_loader, val_loader, train_sampler = get_imagenet_dataloader(
