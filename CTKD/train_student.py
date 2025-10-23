@@ -21,7 +21,7 @@ import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.optim as optim
 from crd.criterion import CRDLoss
-from dataset.cifar100 import (get_cifar100_dataloaders,
+from dataset.cifar100 import (get_cifar100_dataloaders, get_cifar10_dataloaders,
                               get_cifar100_dataloaders_sample)
 from dataset.imagenet import get_imagenet_dataloader, imagenet_list
 from distiller_zoo import PKT, DistillKL, DKDloss, Similarity, VIDLoss, DistillKL_logit_stand
@@ -59,7 +59,7 @@ def parse_option():
     parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
 
     # dataset
-    parser.add_argument('--dataset', type=str, default='cifar100', choices=['cifar100', 'imagenet', 'imagenette'], help='dataset')
+    parser.add_argument('--dataset', type=str, default='cifar100', choices=['cifar100', 'imagenet', 'imagenette', 'cifar10'], help='dataset')
 
     # model
     parser.add_argument('--model_s', type=str, default='resnet8',
@@ -178,6 +178,8 @@ def load_teacher(model_path, n_cls, gpu=None, opt=None):
 
     if opt.dataset == 'cifar100':
         model.load_state_dict(torch.load(model_path, map_location=map_location)['net'])
+    elif opt.dataset == 'cifar10':
+        model.load_state_dict(torch.load(model_path, map_location=map_location)['net'])
     elif opt.dataset == 'imagenet':
         checkpoint = torch.load(model_path, map_location=map_location)
         # new_state_dict = {}
@@ -279,6 +281,7 @@ def main_worker(gpu, ngpus_per_node, opt):
 
     class_num_map = {
         'cifar100': 100,
+        'cifar10': 10,
         'imagenet': 1000,
         'imagenette': 10,
     }
@@ -292,7 +295,7 @@ def main_worker(gpu, ngpus_per_node, opt):
     module_args = {'num_classes': n_cls}
     model_s = model_dict[opt.model_s](**module_args)
     
-    if opt.dataset == 'cifar100':
+    if opt.dataset == 'cifar100' or opt.dataset == 'cifar10':
         data = torch.randn(2, 3, 32, 32)
     elif opt.dataset == 'imagenet':
         data = torch.randn(2, 3, 224, 224)
@@ -398,6 +401,9 @@ def main_worker(gpu, ngpus_per_node, opt):
         else:
             train_loader, val_loader = get_cifar100_dataloaders(batch_size=opt.batch_size,
                                                                         num_workers=opt.num_workers, n_omits=opt.n_omits, imb_factor=opt.imb_factor)
+    elif opt.dataset == 'cifar10':
+        train_loader, val_loader = get_cifar10_dataloaders(batch_size=opt.batch_size,
+                                                                    num_workers=opt.num_workers, n_omits=opt.n_omits, imb_factor=opt.imb_factor)
     elif opt.dataset in imagenet_list:
         train_loader, val_loader, train_sampler = get_imagenet_dataloader(dataset=opt.dataset, batch_size=opt.batch_size,
                                                                         num_workers=opt.num_workers,
